@@ -1,13 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
-class UserAlert(models.Model):
-    STATUS_CHOICES = (
+STATUS_CHOICES = (
         ("A", "ACTIVE"),
         ("D", "DEACTIVE"),
         ("T", "TRIGGERED")
     )
+# Create your models here.
+class UserAlert(models.Model):
+    
     ALERT_CHOICES= (
         ("G", "GREATER THAN"),
         ("GE", "GREATER THAN OR EQUAL"),

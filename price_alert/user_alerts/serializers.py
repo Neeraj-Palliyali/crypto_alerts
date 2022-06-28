@@ -1,6 +1,7 @@
 from rest_framework import serializers
-import requests
-import json
+from user_alerts.models import UserAlert
+from utils.check_status import check_status
+from utils.get_live_price import get_live_price_btc
 
 class AlertCreateSerializer(serializers.Serializer):
     ALERT_CHOICES= (
@@ -15,32 +16,21 @@ class AlertCreateSerializer(serializers.Serializer):
     alert_on = serializers.ChoiceField(choices = ALERT_CHOICES)
 
     def validate(self, attrs):
-        url  = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&order=market_cap_desc&per_page=100&page=1&sparkline=false"
-        response = requests.get(url=url)
-        data = json.loads(response.text)
-        for i in data:
-            if i.get('id') == 'bitcoin':
-                price = i.get('current_price')
-                if check_status(attrs['limit'], attrs['alert_on'], price):
-                    return super().validate(attrs)
-                else:
-                    raise serializers.ValidationError("Condition already met")
-        raise serializers.ValidationError("Error in finding bitcoin price")
+        price = get_live_price_btc()
+        if not price:
+            raise serializers.ValidationError("Could not find price") 
+        if not check_status(attrs['limit'], attrs['alert_on'], price):
+            raise serializers.ValidationError("Condition already met")
 
-def check_status(limit, alert_on, current_val):
-    if alert_on == "G":
-        val = False if current_val > limit else  True 
+class AlertListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAlert
+        exclude = ('created_at','updated_at', 'user')
 
-    elif  alert_on == "GE":        
-        val = False if current_val >= limit else  True 
+class FilterStatusSerializer(serializers.Serializer):
+    status = serializers.CharField()
 
-    elif  alert_on == "E":        
-        val = False if current_val == limit else  True 
-    
-    elif  alert_on == "LE":        
-        val = False if current_val <= limit else  True 
-    
-    elif  alert_on == "L":        
-        val = False if current_val < limit else  True 
-
-    return val
+    def validate(self, attrs):
+        if attrs['status'] not in ["A","D","T"]:
+            raise serializers.ValidationError("The status is not valid")
+        return super().validate(attrs)
