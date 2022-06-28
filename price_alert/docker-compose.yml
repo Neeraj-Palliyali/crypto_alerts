@@ -1,0 +1,39 @@
+version: "3.9"
+   
+services:
+  db:
+    image: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    restart: always
+    entrypoint: /entrypoint.sh
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+  celery:
+        build: 
+            context: .
+        restart: always
+        command: celery -A price_alert.celery worker -l info
+        entrypoint: /entrypoint.sh
+        volumes:
+          - .:/code
+        depends_on:
+            - web
+            - db 
+volumes:
+  pgdata:

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import config
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-evg^lt(bi0zke+*(y_y95oo#qf*v1*cwi#d++0=t&o(8q+$tyb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = config.ALLOWED_HOSTS
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -80,7 +81,16 @@ WSGI_APPLICATION = 'price_alert.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = config.DATABASES
+DATABASES = {
+       'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ.get('POSTGRES_DB'),
+            'USER': os.environ.get('POSTGRES_USER'),
+            'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+            'HOST': 'db',
+            'PORT': 5432
+       }
+   }
 SIMPLE_JWT = config.SIMPLE_JWT
 CACHES = config.CACHES 
 
@@ -140,11 +150,11 @@ EMAIL_PORT = config.EMAIL_PORT
 EMAIL_HOST_USER = config.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD =  config.EMAIL_HOST_PASSWORD
 
-CELERY_BROKER_URL = config.CELERY_BROKER_URL
-CELERY_ACCEPT_CONTENT = config.CELERY_ACCEPT_CONTENT
-CELERY_RESULT_SERIALIZER = config.CELERY_RESULT_SERIALIZER
-CELERY_TIMEZONE = config.CELERY_TIMEZONE
-CELERY_TASK_SERIALIZER = config.CELERY_TASK_SERIALIZER
-CELERY_CACHE_BACKEND = config.CELERY_CACHE_BACKEND
-CELERY_RESULT_BACKEND = config.CELERY_RESULT_BACKEND
-CELERY_BEAT_SCHEDULER = config.CELERY_BEAT_SCHEDULER
+CELERY_BROKER_URL =  'sqla+postgresql://postgres:postgres@localhost/postgres'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kolkata'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
