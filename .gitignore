@@ -1,0 +1,13 @@
+# Environments
+.env/
+
+### Django ###
+__pycache__/
+media/
+
+# Ignoring django migrations
+*/**/migrations/*
+!*/**/migrations/__init__.py
+
+# Others
+.vscode
