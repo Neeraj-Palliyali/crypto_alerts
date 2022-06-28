@@ -12,12 +12,12 @@ app = Celery('assignment')
 app.config_from_object(settings, namespace= 'CELERY')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
-# app.conf.beat_schedule = {
-#     'every-day':{
-#         'task':'brand.tasks.expiry_promotion_daily',
-#         'schedule':crontab(minute = 45, hour = 9,)
-#     }
-# }
+app.conf.beat_schedule = {
+    'every-minute':{
+        'task':'user_alerts.tasks.check_price',
+        'schedule':crontab(minute = '*/1')
+    }
+}
 
 
 @app.task(bind=True)

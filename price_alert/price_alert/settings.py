@@ -83,16 +83,13 @@ WSGI_APPLICATION = 'price_alert.wsgi.application'
 
 DATABASES = config.DATABASES
 SIMPLE_JWT = config.SIMPLE_JWT
-DATABASES = {
-       'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'krypto',
-            'USER': 'postgres',
-            'PASSWORD': 'ironman789',
-            'HOST': 'localhost',
-            'PORT': '5432',
-       }
-   }
+
+EMAIL_BACKEND = config.EMAIL_BACKEND
+EMAIL_HOST = config.EMAIL_HOST
+EMAIL_USE_TLS = config.EMAIL_USE_TLS
+EMAIL_PORT = config.EMAIL_PORT
+EMAIL_HOST_USER = config.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD =  config.EMAIL_HOST_PASSWORD
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
