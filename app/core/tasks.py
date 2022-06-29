@@ -1,7 +1,7 @@
 from celery import shared_task
 from utils.get_live_price import get_live_price_btc
 from utils.mail_helper import send_mails
-from user_alerts.models import UserAlert
+from .models import UserAlert
 
 @shared_task
 def check_price(*args):

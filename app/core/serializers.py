@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from user_alerts.models import UserAlert
+from .models import UserAlert
 from utils.check_status import check_status
 from utils.get_live_price import get_live_price_btc
 
