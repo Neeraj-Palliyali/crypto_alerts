@@ -54,5 +54,17 @@ services:
       - db
       - redis
       - app
+  memcached:
+    image: memcached:latest
+    entrypoint:
+      - memcached
+      - -m 64
+    ports:
+      - "11211:11211"
+    expose:
+      - "11211"
+    depends_on:
+      - db
+      - app
 volumes:
   pgdata:

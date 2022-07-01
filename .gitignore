@@ -4,6 +4,7 @@
 ### Django ###
 __pycache__/
 media/
+data/
 
 # Ignoring django migrations
 */**/migrations/*

@@ -15,7 +15,7 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 app.conf.beat_schedule = {
     'every-minute':{
         'task':'core.tasks.check_price',
-        'schedule':crontab(minute = '*/1')
+        'schedule':crontab(minute = '*/2')
     }
 }
 

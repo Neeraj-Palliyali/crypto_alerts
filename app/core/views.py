@@ -1,13 +1,13 @@
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_cookie, vary_on_headers
+from django.views.decorators.vary import vary_on_cookie
+from django.core.cache import cache
 
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from utils.pagination import PlanListPagination
+from utils.pagination import AlertsListPagination
 
 from .models import UserAlert
 
@@ -18,7 +18,7 @@ from .serializers import AlertCreateSerializer, AlertListSerializer, FilterStatu
 class AlertsViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = AlertListSerializer
-    pagination_class = PlanListPagination
+    pagination_class = AlertsListPagination
 
     def create(self, request, *args, **kwargs):
         serializer = AlertCreateSerializer(data = request.data)
@@ -30,6 +30,7 @@ class AlertsViewSet(viewsets.ModelViewSet):
                 limit = data['limit'],
                 alert_on = data['alert_on'],
             )
+            cache.set('alerts_0',None)
             return Response(
                 {
                     "success":True,
@@ -48,22 +49,32 @@ class AlertsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    @method_decorator(cache_page(60*60*2))
     @method_decorator(vary_on_cookie)
     def list(self, request, *args, **kwargs):
-        
-        alerts = UserAlert.objects.filter(user_id = request.user.id)
+        pagenum = self.request.query_params.get('page', None)
+        if not pagenum:
+            pagenum = 0
+        cached_data = cache.get(f'alerts_{pagenum}')
+        if cached_data:
+            return Response(
+                    cached_data
+                )
+
+        alerts = UserAlert.objects.filter(user_id = request.user.id).order_by('created_at')
         if alerts:
             page = self.paginate_queryset(alerts)
             if page is not None:
-                serializer = self.serializer_class(alerts, many = True)
-                data = self.get_paginated_response(serializer.data).data
+                serializer = self.serializer_class(page, many = True)
+                page_data = self.get_paginated_response(serializer.data).data
+                response = {
+                            "success":True,
+                            "message":"The list is returned",
+                            "data":page_data
+                        }
+                cache.set(f'alerts_{pagenum}',response)
+                cache.set(f'alerts_{pagenum+1}',None)
                 return Response(
-                    {
-                        "success":True,
-                        "message":"The list is returned",
-                        "data":data
-                    }
+                    response
                 )
         return Response(
             {
@@ -92,23 +103,38 @@ class AlertsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    @method_decorator(cache_page(60*60*2))
-    @method_decorator(vary_on_cookie)
     @action(detail=False, url_path="filter-status", methods=["POST"])
     def filter_by_status(self, request, *args, **kwargs):
 
+        pagenum = self.request.query_params.get('page', None)
+
         serializer = FilterStatusSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
+        status = serializer.data['status']
+        if not pagenum:
+            pagenum = 0
+        cached_data = cache.get(f'alerts_{status}_{pagenum}')
+        if cached_data:
+            return Response(
+                    cached_data
+                )
+
+
         alerts = UserAlert.objects.filter(user_id = request.user.id, status = serializer.data['status'])
         if alerts:
             page = self.paginate_queryset(alerts)
             if page is not None:
-                serializer = self.serializer_class(alerts, many = True)
+                serializer = self.serializer_class(page, many = True)
                 data = self.get_paginated_response(serializer.data).data
+                response = {
+                            "success":True,
+                            "message":"The list is returned",
+                            "data":data
+                        }
+                cache.set(f'alerts_{status}_{pagenum}',response)
+                cache.set(f'alerts_{status}_{pagenum+1}',None)
                 return Response(
-                    {
-                        "data":data
-                    }
+                    response
                 )
 
         return Response(
