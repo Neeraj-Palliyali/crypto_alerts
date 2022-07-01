@@ -21,6 +21,7 @@ class AlertCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError("Could not find price") 
         if not check_status(attrs['limit'], attrs['alert_on'], price):
             raise serializers.ValidationError("Condition already met")
+        return attrs
 
 class AlertListSerializer(serializers.ModelSerializer):
     class Meta:
