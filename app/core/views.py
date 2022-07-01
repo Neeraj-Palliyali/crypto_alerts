@@ -54,7 +54,7 @@ class AlertsViewSet(viewsets.ModelViewSet):
         pagenum = self.request.query_params.get('page', None)
         if not pagenum:
             pagenum = 0
-        cached_data = cache.get(f'alerts_{pagenum}')
+        cached_data = cache.get(f'alerts_{str(pagenum)}')
         if cached_data:
             return Response(
                     cached_data
@@ -71,8 +71,8 @@ class AlertsViewSet(viewsets.ModelViewSet):
                             "message":"The list is returned",
                             "data":page_data
                         }
-                cache.set(f'alerts_{pagenum}',response)
-                cache.set(f'alerts_{pagenum+1}',None)
+                cache.set(f'alerts_{str(pagenum)}',response)
+                cache.set(f'alerts_{str(pagenum)+1}',None)
                 return Response(
                     response
                 )
@@ -113,7 +113,7 @@ class AlertsViewSet(viewsets.ModelViewSet):
         status = serializer.data['status']
         if not pagenum:
             pagenum = 0
-        cached_data = cache.get(f'alerts_{status}_{pagenum}')
+        cached_data = cache.get(f'alerts_{status}_{str(pagenum)}')
         if cached_data:
             return Response(
                     cached_data
@@ -131,8 +131,8 @@ class AlertsViewSet(viewsets.ModelViewSet):
                             "message":"The list is returned",
                             "data":data
                         }
-                cache.set(f'alerts_{status}_{pagenum}',response)
-                cache.set(f'alerts_{status}_{pagenum+1}',None)
+                cache.set(f'alerts_{status}_{str(pagenum)}',response)
+                cache.set(f'alerts_{status}_{str(pagenum)+1}',None)
                 return Response(
                     response
                 )
