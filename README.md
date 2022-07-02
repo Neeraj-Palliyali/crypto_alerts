@@ -24,3 +24,8 @@ docker-compose up --build
 
 
 Users are currently added manually from the admin panel for that you would need to create a superuser 
+
+
+# Api Calls
+
+All the required api calls are added in the folder as a postman collections
